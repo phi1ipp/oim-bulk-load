@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
         return
     }
 
-    val env = Hashtable<String,String>()
+    val env = Hashtable<String, String>()
 
     env[OIMClient.JAVA_NAMING_FACTORY_INITIAL] = ctxFactory;
     env[OIMClient.JAVA_NAMING_PROVIDER_URL] = serverURL;
@@ -57,13 +57,18 @@ fun main(args: Array<String>) {
                 Pair("Last Name", lname),
                 Pair("Email", email),
                 Pair("User Login", login),
-                Pair("act_key", orgKey[0].entityId),
+                Pair("act_key", orgKey[0].entityId.toLong()),
                 Pair("Xellerate Type", "End-User"),
                 Pair("Role", "EMP")
             )
         )
 
-        val umr = um.create(u)
-        println("Creating user $login - ${umr.status}")
+        try {
+            val umr = um.create(u)
+
+            println("Creating user $login - ${umr.status}")
+        } catch (e: Exception) {
+            println("Creating user $login - EXCEPTION! ${e.message}")
+        }
     }
 }
