@@ -1,6 +1,11 @@
+import oracle.iam.identity.orgmgmt.api.OrganizationManager
+import oracle.iam.identity.orgmgmt.api.OrganizationManagerConstants
 import oracle.iam.platform.OIMClient
 import java.util.*
 import oracle.iam.identity.usermgmt.api.UserManager
+import oracle.iam.identity.usermgmt.vo.User
+import oracle.iam.platform.entitymgr.vo.SearchCriteria
+import java.io.File
 
 fun main(args: Array<String>) {
     val ctxFactory = "weblogic.jndi.WLInitialContextFactory"
@@ -8,6 +13,11 @@ fun main(args: Array<String>) {
     val username = "xelsysadm"
     val password = args[1]
     val configPath = args[2]
+
+    if (args.size < 4) {
+        println("Usage: serverURL password authwl.config_path file_to_load")
+        return
+    }
 
     val env = Hashtable<String,String>()
 
@@ -23,4 +33,35 @@ fun main(args: Array<String>) {
 
     val um = oimClient.getService(UserManager::class.java)
     println("got UM")
+
+    val om = oimClient.getService(OrganizationManager::class.java)
+    println("got OM")
+
+    File(args[3]).forEachLine {
+        val (login, fname, lname, email, orgName) = it.split(",")
+
+        val orgKey =
+            om.search(
+                SearchCriteria(
+                    OrganizationManagerConstants.AttributeName.ORG_NAME,
+                    orgName,
+                    SearchCriteria.Operator.EQUAL
+                ),
+                null, null
+            )
+
+        val u = User(
+            null,
+            hashMapOf(
+                Pair("First Name", fname),
+                Pair("Last Name", lname),
+                Pair("Email", email),
+                Pair("User Login", login),
+                Pair("Organization", orgKey[0].entityId)
+            )
+        )
+
+        val umr = um.create(u)
+        println("Creating user $login - ${umr.status}")
+    }
 }
