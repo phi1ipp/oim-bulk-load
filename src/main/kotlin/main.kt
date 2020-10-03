@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
         val orgKey =
             om.search(
                 SearchCriteria(
-                    OrganizationManagerConstants.AttributeName.ORG_NAME,
+                    OrganizationManagerConstants.AttributeName.ORG_NAME.id,
                     orgName,
                     SearchCriteria.Operator.EQUAL
                 ),
@@ -57,7 +57,9 @@ fun main(args: Array<String>) {
                 Pair("Last Name", lname),
                 Pair("Email", email),
                 Pair("User Login", login),
-                Pair("Organization", orgKey[0].entityId)
+                Pair("act_key", orgKey[0].entityId),
+                Pair("Xellerate Type", "End-User"),
+                Pair("Role", "EMP")
             )
         )
 
