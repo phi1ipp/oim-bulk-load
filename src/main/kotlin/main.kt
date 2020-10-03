@@ -77,11 +77,18 @@ fun main(args: Array<String>) {
             args[0] == "-e" -> {
                 val (login, fname, lname, email, orgName) = it.split(",")
 
-                val u = um.getDetails(login.toUpperCase(), null, true)
-                u.email = email
+                val u = try {
+                    um.getDetails(login.toUpperCase(), null, true)
+                } catch (e: Exception) {
+                    println("User $login not found")
+                    return@forEachLine
+                }
+
+                val nu = User(u.id)
+                nu.setAttribute("Email", email)
 
                 try {
-                    val umr = um.modify(u)
+                    val umr = um.modify(nu)
 
                     println("Updated email for user $login - ${umr.status}")
                 } catch (e: Exception) {
