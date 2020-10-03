@@ -3,6 +3,7 @@ import oracle.iam.identity.orgmgmt.api.OrganizationManagerConstants
 import oracle.iam.platform.OIMClient
 import java.util.*
 import oracle.iam.identity.usermgmt.api.UserManager
+import oracle.iam.identity.usermgmt.api.UserManagerConstants
 import oracle.iam.identity.usermgmt.vo.User
 import oracle.iam.platform.entitymgr.vo.SearchCriteria
 import java.io.File
@@ -114,7 +115,7 @@ fun main(args: Array<String>) {
                 }
 
                 val nu = User(u.id)
-                nu.setAttribute("mgr_key", m.id.toLong())
+                nu.setAttribute(UserManagerConstants.AttributeName.MANAGER_KEY.id, m.id.toLong())
 
                 try {
                     val umr = um.modify(nu)
