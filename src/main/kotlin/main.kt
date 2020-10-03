@@ -9,12 +9,12 @@ import java.io.File
 
 fun main(args: Array<String>) {
     val ctxFactory = "weblogic.jndi.WLInitialContextFactory"
-    val serverURL = args[0]
+    val serverURL = args[1]
     val username = "xelsysadm"
-    val password = args[1]
-    val configPath = args[2]
+    val password = args[2]
+    val configPath = args[3]
 
-    if (args.size < 4) {
+    if (args.size < 5) {
         println("Usage: serverURL password authwl.config_path file_to_load")
         return
     }
@@ -37,38 +37,60 @@ fun main(args: Array<String>) {
     val om = oimClient.getService(OrganizationManager::class.java)
     println("got OM")
 
-    File(args[3]).forEachLine {
-        val (login, fname, lname, email, orgName) = it.split(",")
+    File(args[4]).forEachLine {
+        when {
+            args[0] == "-c" -> {
+                val (login, fname, lname, email, orgName) = it.split(",")
 
-        val orgKey =
-            om.search(
-                SearchCriteria(
-                    OrganizationManagerConstants.AttributeName.ORG_NAME.id,
-                    orgName,
-                    SearchCriteria.Operator.EQUAL
-                ),
-                null, null
-            )
+                val orgKey =
+                    om.search(
+                        SearchCriteria(
+                            OrganizationManagerConstants.AttributeName.ORG_NAME.id,
+                            orgName,
+                            SearchCriteria.Operator.EQUAL
+                        ),
+                        null, null
+                    )
 
-        val u = User(
-            null,
-            hashMapOf(
-                Pair("First Name", fname),
-                Pair("Last Name", lname),
-                Pair("Email", email),
-                Pair("User Login", login),
-                Pair("act_key", orgKey[0].entityId.toLong()),
-                Pair("Xellerate Type", "End-User"),
-                Pair("Role", "EMP")
-            )
-        )
+                val u = User(
+                    null,
+                    hashMapOf(
+                        Pair("First Name", fname),
+                        Pair("Last Name", lname),
+                        Pair("Email", email),
+                        Pair("User Login", login),
+                        Pair("act_key", orgKey[0].entityId.toLong()),
+                        Pair("Xellerate Type", "End-User"),
+                        Pair("Role", "EMP")
+                    )
+                )
 
-        try {
-            val umr = um.create(u)
+                try {
+                    val umr = um.create(u)
 
-            println("Creating user $login - ${umr.status}")
-        } catch (e: Exception) {
-            println("Creating user $login - EXCEPTION! ${e.message}")
+                    println("Creating user $login - ${umr.status}")
+                } catch (e: Exception) {
+                    println("Creating user $login - EXCEPTION! ${e.message}")
+                }
+            }
+
+            args[0] == "-e" -> {
+                val (login, fname, lname, email, orgName) = it.split(",")
+
+                val u = um.getDetails(login.toUpperCase(), null, true)
+                u.email = email
+
+                try {
+                    val umr = um.modify(u)
+
+                    println("Updated email for user $login - ${umr.status}")
+                } catch (e: Exception) {
+                    println("Updated email for user $login - EXCEPTION! ${e.message}")
+                }
+            }
+            else -> {
+                println("Unknown operation ${args[0]}")
+            }
         }
     }
 }
