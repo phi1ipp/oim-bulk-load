@@ -1,5 +1,6 @@
 import oracle.iam.platform.OIMClient
 import java.util.*
+import oracle.iam.identity.usermgmt.api.UserManager
 
 fun main(args: Array<String>) {
     val ctxFactory = "weblogic.jndi.WLInitialContextFactory"
@@ -14,7 +15,12 @@ fun main(args: Array<String>) {
     env[OIMClient.JAVA_NAMING_PROVIDER_URL] = serverURL;
     System.setProperty("java.security.auth.login.config", configPath);
     System.setProperty("APPSERVER_TYPE", "wls");
-    val oimClient = OIMClient(env);
-    oimClient.login(username, password.toCharArray());
+
+    val oimClient = OIMClient(env).also {
+        it.login(username, password.toCharArray());
+    }
     println("connected")
+
+    val um = oimClient.getService(UserManager::class.java)
+    println("got UM")
 }
