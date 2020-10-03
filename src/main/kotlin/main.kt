@@ -75,7 +75,7 @@ fun main(args: Array<String>) {
             }
 
             args[0] == "-e" -> {
-                val (login, fname, lname, email, orgName) = it.split(",")
+                val (login, _, _, email, _) = it.split(",")
 
                 val u = try {
                     um.getDetails(login.toUpperCase(), null, true)
@@ -95,6 +95,36 @@ fun main(args: Array<String>) {
                     println("Updated email for user $login - EXCEPTION! ${e.message}")
                 }
             }
+
+            args[0] == "-m" -> {
+                val (login, mgrLogin) = it.split(",")
+
+                val u = try {
+                    um.getDetails(login.toUpperCase(), null, true)
+                } catch (e: Exception) {
+                    println("User $login not found")
+                    return@forEachLine
+                }
+
+                val m = try {
+                    um.getDetails(mgrLogin.toUpperCase(), null, true)
+                } catch (e: Exception) {
+                    println("Manager $mgrLogin not found")
+                    return@forEachLine
+                }
+
+                val nu = User(u.id)
+                nu.setAttribute("mgr_key", m.id.toLong())
+
+                try {
+                    val umr = um.modify(nu)
+
+                    println("Updated manager for user $login - ${umr.status}")
+                } catch (e: Exception) {
+                    println("Updated manager for user $login - EXCEPTION! ${e.message}")
+                }
+            }
+
             else -> {
                 println("Unknown operation ${args[0]}")
             }
